@@ -3,6 +3,7 @@ import spacy
 import re
 import emoji 
 import contractions
+import os
 
 """
 pip install contractions
@@ -10,7 +11,7 @@ pip install emoji
 pip install pandas
 pip install spacy
 python -m spacy download en
-python -m spacy download en_core_news_md
+python -m spacy download en_core_web_md
 """
 
 TRAINING_FILE = "twitter_training.csv"
@@ -21,6 +22,7 @@ CHOSEN_ENTITY = "Google"
 def get_dataset():
     headers = ["id", "entity", "sentiment", "tweet"]
     # Leer del csv asignando nombres a las columnas y descartando la primera (id)
+    os.chdir(os.path.join(os.getcwd(), "dataset"))
     training_df = pd.read_csv(TRAINING_FILE, names = headers, usecols = headers[1:])
     validation_df = pd.read_csv(VALIDATION_FILE, names = headers, usecols = headers[1:])
     
@@ -33,7 +35,7 @@ def get_dataset():
 
 def preprocess_tweets(df):
     # Carga modelo para nlp (instalar previamente)
-    nlp = spacy.load("en_core_news_md")
+    nlp = spacy.load("en_core_web_md")
     
     # Sacar caracteres molestos
     def clean_text(raw_text):
