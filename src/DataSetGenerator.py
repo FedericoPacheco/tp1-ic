@@ -14,8 +14,8 @@ python -m spacy download en
 python -m spacy download en_core_web_md
 """
 
-TRAINING_AND_VALIDATION_FILE = "twitter_training.csv"
-TESTING_FILE = "twitter_validation.csv"
+TRAINING_AND_VALIDATION_FILE = "twitter_training_and_validation.csv"
+TESTING_FILE = "twitter_testing.csv"
 CHOSEN_ENTITY = "Google"
 
 
