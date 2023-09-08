@@ -19,7 +19,7 @@ TESTING_FILE = "twitter_testing.csv"
 CHOSEN_ENTITY = "Google"
 
 
-def get_dataset():
+def get_raw_tweets():
     # Cambiar al directorio del dataset 
     os.chdir("..")
     os.chdir(os.path.join(os.getcwd(), "dataset"))
@@ -65,19 +65,19 @@ def preprocess_tweets(df):
     return df
     
 
-def save_to_disk(df, file_name):
-    new_file_name = file_name.rsplit(".", 1)[0] + "-preproc.csv"
+def save_dataset(df, file_name):
+    new_file_name = file_name.rsplit(".", 1)[0] + "_preproc.csv"
     df[["sentiment", "tweet_preproc"]].to_csv(new_file_name, index = False)
 
 
 def main():
-    training_and_validation_df, testing_df = get_dataset()
+    training_and_validation_df, testing_df = get_raw_tweets()
 
     preprocess_tweets(training_and_validation_df)
     preprocess_tweets(testing_df)
 
-    save_to_disk(training_and_validation_df, TRAINING_AND_VALIDATION_FILE)
-    save_to_disk(testing_df, TESTING_FILE)
+    save_dataset(training_and_validation_df, TRAINING_AND_VALIDATION_FILE)
+    save_dataset(testing_df, TESTING_FILE)
 
     #print(training_and_validation_df)
     #print(testing_df)
