@@ -89,7 +89,7 @@ def get_test_train_validation(df):
 
 def save_dataset(df, name):
     new_file_name = "./preproc/" + name
-    df[["sentiment", "tweet_preproc"]].to_csv(new_file_name, index = False)
+    df[["tweet_preproc", "sentiment"]].to_csv(new_file_name, index = False)
 
 
 def main():
