@@ -155,8 +155,9 @@ def model_tfidf(training_df, validation_df, testing_df):
 
     print(x_val)
 
-    # Because TfidfVectorizer returns sparse matrix for efficient memory storage,
-    # we need to convert it to normal dense matrix before feed to the neural network
+    # Because TfidfVectorizer returns sparse matrix, which only stores the non-zero elements. This is done to save 
+    # memory, as most of the elements in a text corpus are zeros. We need to convert it to normal dense matrix 
+    # before feed to the neural network.
     x_train = scipy.sparse.csr_matrix.todense(x_train)
     x_val = scipy.sparse.csr_matrix.todense(x_val)
     x_test = scipy.sparse.csr_matrix.todense(x_test)
