@@ -1,3 +1,4 @@
+from sklearn.model_selection import train_test_split
 import pandas as pd
 import spacy
 import re
@@ -18,10 +19,15 @@ TRAINING_AND_VALIDATION_FILE = "twitter_training_and_validation.csv"
 TESTING_FILE = "twitter_testing.csv"
 CHOSEN_ENTITY = "Google"
 
+TRAINING_PREPROC = "training_preproc.csv"
+VALIDATION_PREPROC = "validation_preproc.csv"
+TESTING_PREPROC = "testing_preproc.csv"
+DATASET = "dataset_completo.csv"
+
 
 def get_raw_tweets():
     # Cambiar al directorio del dataset 
-    os.chdir("..")
+    # os.chdir("..")
     os.chdir(os.path.join(os.getcwd(), "dataset"))
     
     # Leer del csv asignando nombres a las columnas y descartando la primera (id)
@@ -33,7 +39,11 @@ def get_raw_tweets():
     training_and_validation_df = training_and_validation_df[training_and_validation_df["entity"] == CHOSEN_ENTITY]
     testing_df = testing_df[testing_df["entity"] == CHOSEN_ENTITY]
 
-    return training_and_validation_df, testing_df
+    # Concatenacion de ambos datasets para luego hacer un split 70:10:20    
+    dataset = pd.concat([training_and_validation_df, testing_df], ignore_index=True)    
+
+    #return training_and_validation_df, testing_df
+    return dataset
 
 
 def preprocess_tweets(df):
@@ -62,25 +72,38 @@ def preprocess_tweets(df):
         lambda text: " ".join([token.lemma_ for token in nlp(clean_text(text)) if not token.is_stop])
     )
     
+    # Sacar los nan y tweets vacios
+    df = df[df["tweet_preproc"] != ""]
+    df = df[df["tweet_preproc"] != " "]
+    df = df.dropna(ignore_index=True)    
+    
     return df
     
+def get_test_train_validation(df):
+    # Dividir el DataFrame en conjunto de entrenamiento (70%), conjunto de validación (20%) y conjunto de prueba (10%)
+    train_df, temp_df = train_test_split(df, test_size=0.3)
+    test_df, val_df = train_test_split(temp_df, test_size=0.67)
+        
+    return train_df, test_df, val_df
 
-def save_dataset(df, file_name):
-    new_file_name = file_name.rsplit(".", 1)[0] + "_preproc.csv"
-    df[["sentiment", "tweet_preproc"]].to_csv(new_file_name, index = False)
+
+def save_dataset(df, name):
+    new_file_name = "./preproc/" + name
+    df[["tweet_preproc", "sentiment"]].to_csv(new_file_name, index = False)
 
 
 def main():
-    training_and_validation_df, testing_df = get_raw_tweets()
 
-    preprocess_tweets(training_and_validation_df)
-    preprocess_tweets(testing_df)
+    dataset = get_raw_tweets()
 
-    save_dataset(training_and_validation_df, TRAINING_AND_VALIDATION_FILE)
-    save_dataset(testing_df, TESTING_FILE)
-
-    #print(training_and_validation_df)
-    #print(testing_df)
+    dataset_preproc = preprocess_tweets(dataset)
+    
+    train_df, test_df, val_df = get_test_train_validation(dataset_preproc)
+    
+    save_dataset(dataset_preproc, DATASET)
+    save_dataset(train_df, TRAINING_PREPROC)
+    save_dataset(test_df, TESTING_PREPROC)
+    save_dataset(val_df, VALIDATION_PREPROC)
 
 
 if __name__ == "__main__":
