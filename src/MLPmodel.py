@@ -195,6 +195,11 @@ if __name__ == "__main__":
     # print(train_df.describe())
     # print(validation_df.describe())
     # print(test_df.describe())
+    
+    # Verificar que las clases de sentimiento sean 3, y esten mas o menos iguales en cantidad
+    # print(train_df.groupby("sentiment").count())
+    # print(validation_df.groupby("sentiment").count())
+    # print(test_df.groupby("sentiment").count())
 
     model_embedding(train_df, validation_df, test_df)
     # model_tfidf(train_df, validation_df, test_df)

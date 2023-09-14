@@ -128,11 +128,11 @@ def procesarDatosKaggle():
 
 def procesarDatosTweets():
 
-    dataset = get_raw_tweets()
+    dataset = get_raw_tweets() # tweets
 
-    dataset_preproc = preprocess_tweets(dataset, idioma_ingles=False) # tweets
+    dataset_preproc = preprocess_tweets(dataset, idioma_ingles=False) # idioma_ingles=False
     
-    train_df, test_df, val_df = get_test_train_validation(dataset_preproc) # idioma_ingles=False
+    train_df, test_df, val_df = get_test_train_validation(dataset_preproc) 
     
     save_dataset(dataset_preproc, DATASET)
     save_dataset(train_df, TRAINING_PREPROC)
@@ -142,8 +142,8 @@ def procesarDatosTweets():
 
 if __name__ == "__main__":
     
-    # procesarDatosKaggle()
-    procesarDatosTweets()
+    procesarDatosKaggle()
+    # procesarDatosTweets()
     
     
 
