@@ -67,7 +67,7 @@ def clean_text(raw_text):
     text = emoji.demojize(text)                         # Sacar los emojis
     text = re.sub(r"(http|www)\S+", "", text)           # Remover urls
     text = text.lower()                                 # Llevar todo a minuscula
-    text = re.sub(r"\d+", "", text)                     # Remover numeros
+    # text = re.sub(r"\d+", "", text)                     # Remover numeros
     text = re.sub(r"[\t\n\r\f\v]", "", text)            # Remover enters y otras "porquerias"
     text = re.sub(r"[\.\,:;]", " ", text)               # Remover caracteres de puntuacion innecesarios
     text = re.sub(r"[\[\]\(\)\{\}]", "", text)
@@ -89,7 +89,7 @@ def preprocess_tweets(df, idioma_ingles):
     
     # Operar "vectorialmente" sobre el data frame: limpiar texto, armar un doc de spacy con nlp(), fijarse que no sea stopword y lematizar
     df["tweet_preproc"] = df["tweet"].apply(
-        lambda text: " ".join([token.lemma_ for token in nlp(clean_text(text)) if not token.is_stop])
+        lambda text: " ".join([token.lemma_ for token in nlp(clean_text(text))]) # if not token.is_stop])
     )
     
     # Sacar los nan y tweets vacios
