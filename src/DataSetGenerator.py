@@ -13,11 +13,14 @@ pip install pandas
 pip install spacy
 python -m spacy download en
 python -m spacy download en_core_web_md
+python -m spacy download es_core_news_sm
 """
 
 TRAINING_AND_VALIDATION_FILE = "twitter_training_and_validation.csv"
 TESTING_FILE = "twitter_testing.csv"
 CHOSEN_ENTITY = "Google"
+
+TWEETS_FILE = "tweetsMilei.csv"
 
 TRAINING_PREPROC = "training_preproc.csv"
 VALIDATION_PREPROC = "validation_preproc.csv"
@@ -25,10 +28,10 @@ TESTING_PREPROC = "testing_preproc.csv"
 DATASET = "dataset_completo.csv"
 
 
-def get_raw_tweets():
+def get_raw_tweets_kaggle():
     # Cambiar al directorio del dataset 
     # os.chdir("..")
-    os.chdir(os.path.join(os.getcwd(), "dataset"))
+    os.chdir(os.path.join(os.getcwd(), "dataset/kaggle"))
     
     # Leer del csv asignando nombres a las columnas y descartando la primera (id)
     headers = ["id", "entity", "sentiment", "tweet"]
@@ -46,26 +49,43 @@ def get_raw_tweets():
     return dataset
 
 
-def preprocess_tweets(df):
-    # Carga modelo para nlp (instalar previamente)
-    nlp = spacy.load("en_core_web_md")
+def get_raw_tweets():
+    # Cambiar al directorio del dataset 
+    # os.chdir("..")
+    os.chdir(os.path.join(os.getcwd(), "dataset/tweets"))
     
-    # Sacar cosas innecesarias del texto
-    def clean_text(raw_text):
-        text = str(raw_text)                                # Convertir a cadena por si acaso
-        text = contractions.fix(text)                       # Sacar abreviaturas
-        text = emoji.demojize(text)                         # Sacar los emojis
-        text = re.sub(r"(http|www)\S+", "", text)           # Remover urls
-        text = text.lower()                                 # Llevar todo a minuscula
-        text = re.sub(r"\d+", "", text)                     # Remover numeros
-        text = re.sub(r"[\t\n\r\f\v]", "", text)            # Remover enters y otras "porquerias"
-        text = re.sub(r"[\.\,:;]", " ", text)               # Remover caracteres de puntuacion innecesarios
-        text = re.sub(r"[\[\]\(\)\{\}]", "", text)
-        text = re.sub(r"[\"´`'′’“”<>]", "", text)
-        text = re.sub(r"[¿\?¡\!\@_~\+\*°#%\|\-\$/&–—…]", "", text)   
-        text = re.sub(r"\s{2,}", " ", text)                # Remover espacios de más   
+    # Leer del csv asignando nombres a las columnas y descartando la primera (fecha)
+    headers = ["fecha", "tweet", "sentiment"]
+    dataset = pd.read_csv(TWEETS_FILE, usecols = headers[1:], sep=";")   
 
-        return text
+    return dataset
+
+# Sacar cosas innecesarias del texto
+def clean_text(raw_text):
+    text = str(raw_text)                                # Convertir a cadena por si acaso
+    text = contractions.fix(text)                       # Sacar abreviaturas
+    text = emoji.demojize(text)                         # Sacar los emojis
+    text = re.sub(r"(http|www)\S+", "", text)           # Remover urls
+    text = text.lower()                                 # Llevar todo a minuscula
+    text = re.sub(r"\d+", "", text)                     # Remover numeros
+    text = re.sub(r"[\t\n\r\f\v]", "", text)            # Remover enters y otras "porquerias"
+    text = re.sub(r"[\.\,:;]", " ", text)               # Remover caracteres de puntuacion innecesarios
+    text = re.sub(r"[\[\]\(\)\{\}]", "", text)
+    text = re.sub(r"[\"´`'′’“”<>]", "", text)
+    text = re.sub(r"[¿\?¡\!\@_~\+\*°#%\|\-\$/&–—…]", "", text)   
+    text = re.sub(r"\s{2,}", " ", text)                # Remover espacios de más   
+
+    return text
+
+
+def preprocess_tweets(df, idioma_ingles):
+    
+    modelo = ""
+    if(idioma_ingles): modelo = "en_core_web_md"
+    else : modelo = "es_core_news_sm"
+    
+    # Carga modelo para nlp (instalar previamente)
+    nlp = spacy.load(modelo)
     
     # Operar "vectorialmente" sobre el data frame: limpiar texto, armar un doc de spacy con nlp(), fijarse que no sea stopword y lematizar
     df["tweet_preproc"] = df["tweet"].apply(
@@ -92,11 +112,11 @@ def save_dataset(df, name):
     df[["tweet_preproc", "sentiment"]].to_csv(new_file_name, index = False)
 
 
-def main():
+def procesarDatosKaggle():
 
-    dataset = get_raw_tweets()
+    dataset = get_raw_tweets_kaggle() # kaggle
 
-    dataset_preproc = preprocess_tweets(dataset)
+    dataset_preproc = preprocess_tweets(dataset, idioma_ingles=True) # idioma_ingles=True
     
     train_df, test_df, val_df = get_test_train_validation(dataset_preproc)
     
@@ -106,7 +126,25 @@ def main():
     save_dataset(val_df, VALIDATION_PREPROC)
 
 
+def procesarDatosTweets():
+
+    dataset = get_raw_tweets()
+
+    dataset_preproc = preprocess_tweets(dataset, idioma_ingles=False) # tweets
+    
+    train_df, test_df, val_df = get_test_train_validation(dataset_preproc) # idioma_ingles=False
+    
+    save_dataset(dataset_preproc, DATASET)
+    save_dataset(train_df, TRAINING_PREPROC)
+    save_dataset(test_df, TESTING_PREPROC)
+    save_dataset(val_df, VALIDATION_PREPROC)
+
+
 if __name__ == "__main__":
-    main()
+    
+    # procesarDatosKaggle()
+    procesarDatosTweets()
+    
+    
 
 

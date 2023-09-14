@@ -14,10 +14,10 @@ VALIDATION_PREPROC = "validation_preproc.csv"
 TESTING_PREPROC = "testing_preproc.csv"
 
 
-def get_dataset():
+def get_dataset(fuente): # "kaggle" o "tweets"
     # Cambiar al directorio del dataset
     # os.chdir("..")
-    os.chdir(os.path.join(os.getcwd(), "dataset/preproc"))
+    os.chdir(os.path.join(os.getcwd(), "dataset/" + fuente + "/preproc"))
 
     # Leer del csv
     train_df = pd.read_csv(TRAINING_PREPROC)
@@ -188,12 +188,13 @@ def model_tfidf(training_df, validation_df, testing_df):
 
 if __name__ == "__main__":
 
-    train_df, validation_df, test_df = get_dataset()
+    train_df, validation_df, test_df = get_dataset("kaggle")
+    # train_df, validation_df, test_df = get_dataset("tweets")
 
     # Descripciones sobre los datasets:
     # print(train_df.describe())
     # print(validation_df.describe())
     # print(test_df.describe())
 
-    # model_embedding(train_df, validation_df, test_df)
-    model_tfidf(train_df, validation_df, test_df)
+    model_embedding(train_df, validation_df, test_df)
+    # model_tfidf(train_df, validation_df, test_df)

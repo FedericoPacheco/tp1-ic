@@ -97,7 +97,7 @@ const armarQuery = (query) => {
 
 const armarCSV = (data) => {
 
-    let tweetsCSV = "Fecha;Tweet;\n";
+    let tweetsCSV = "fecha;tweet;\n";
 
     data.forEach(tweetObj => {
 
