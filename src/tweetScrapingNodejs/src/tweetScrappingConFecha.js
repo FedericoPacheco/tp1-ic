@@ -112,8 +112,8 @@ const armarCSV = (data) => {
 
 const main = (async () => {
 
-    const query = "Milei libertad"
-    const minTweets = 100
+    const query = "Milei plan"
+    const minTweets = 500
 
     const data = await scrapping(armarQuery(query), minTweets);
 

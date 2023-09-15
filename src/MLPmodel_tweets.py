@@ -164,9 +164,9 @@ def model_tfidf(training_df, validation_df, testing_df):
 
     # Create the model
     model = tf.keras.Sequential([
-        tf.keras.layers.Dense(units=128, activation='relu', input_shape=(x_train.shape[1],)), # Hidden layer with relu activation function
+        tf.keras.layers.Dense(units=64, activation='relu', input_shape=(x_train.shape[1],)), # Hidden layer with relu activation function
         tf.keras.layers.Dropout(0.2), # Dropouts were added at each hidden layer to reduce model overfitting.
-        tf.keras.layers.Dense(units=32, activation='relu'), # Hidden layer with relu activation function
+        tf.keras.layers.Dense(units=8, activation='relu'), # Hidden layer with relu activation function
         tf.keras.layers.Dropout(0.2), # Dropouts were added at each hidden layer to reduce model overfitting.
         tf.keras.layers.Dense(3, activation='softmax')
     ])
@@ -197,9 +197,9 @@ if __name__ == "__main__":
     # print(test_df.describe())
     
     # Verificar que las clases de sentimiento sean 3, y esten mas o menos iguales en cantidad
-    # print(train_df.groupby("sentiment").count())
-    # print(validation_df.groupby("sentiment").count())
-    # print(test_df.groupby("sentiment").count())
+    print("\nDatos de train:\n", train_df.groupby("sentiment").count())
+    print("\nDatos de validacion:\n", validation_df.groupby("sentiment").count())
+    print("\nDatos de test:\n", test_df.groupby("sentiment").count())
 
-    # model_embedding(train_df, validation_df, test_df)
-    model_tfidf(train_df, validation_df, test_df)
+    model_embedding(train_df, validation_df, test_df)
+    # model_tfidf(train_df, validation_df, test_df)

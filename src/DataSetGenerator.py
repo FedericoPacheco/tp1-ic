@@ -142,8 +142,8 @@ def procesarDatosTweets():
 
 if __name__ == "__main__":
     
-    procesarDatosKaggle()
-    # procesarDatosTweets()
+    # procesarDatosKaggle()
+    procesarDatosTweets()
     
     
 
