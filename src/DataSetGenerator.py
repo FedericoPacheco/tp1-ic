@@ -21,6 +21,7 @@ TESTING_FILE = "twitter_testing.csv"
 CHOSEN_ENTITY = "Google"
 
 TWEETS_FILE = "tweetsMilei.csv"
+BALOTAJE_FILE = "balotaje2015-50k.csv"
 
 TRAINING_PREPROC = "training_preproc.csv"
 VALIDATION_PREPROC = "validation_preproc.csv"
@@ -59,6 +60,19 @@ def get_raw_tweets():
     dataset = pd.read_csv(TWEETS_FILE, usecols = headers[1:], sep=";")   
 
     return dataset
+
+
+def get_raw_tweets_balotaje():
+    # Cambiar al directorio del dataset 
+    # os.chdir("..")
+    os.chdir(os.path.join(os.getcwd(), "dataset/balotaje2015"))
+    
+    # Leer del csv asignando nombres a las columnas
+    headers = ["tweet", "sentiment"]
+    dataset = pd.read_csv(BALOTAJE_FILE, usecols = headers, sep=";")   
+    
+    return dataset
+
 
 # Sacar cosas innecesarias del texto
 def clean_text(raw_text):
@@ -140,10 +154,25 @@ def procesarDatosTweets():
     save_dataset(val_df, VALIDATION_PREPROC)
 
 
+def procesarDatosBalotaje():
+
+    dataset = get_raw_tweets_balotaje() # tweets
+
+    dataset_preproc = preprocess_tweets(dataset, idioma_ingles=False) # idioma_ingles=False
+    
+    train_df, test_df, val_df = get_test_train_validation(dataset_preproc) 
+    
+    save_dataset(dataset_preproc, DATASET)
+    save_dataset(train_df, TRAINING_PREPROC)
+    save_dataset(test_df, TESTING_PREPROC)
+    save_dataset(val_df, VALIDATION_PREPROC)
+
+
 if __name__ == "__main__":
     
     # procesarDatosKaggle()
-    procesarDatosTweets()
+    # procesarDatosTweets()
+    procesarDatosBalotaje()
     
     
 
