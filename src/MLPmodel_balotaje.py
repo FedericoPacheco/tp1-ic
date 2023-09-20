@@ -16,6 +16,7 @@ TESTING_PREPROC = "testing_preproc.csv"
 TFIDF_BALOTAJE = "modelo-TFIDF-balotaje.keras"
 EMBEDDING_BALOTAJE = "modelo-EMBEDDING-balotaje.keras"
 CONVOLUTIONAL_BALOTAJE = "modelo-CONVOLUTIONAL-balotaje.keras"
+LSTM_BALOTAJE = "modelo-LSTM-balotaje.keras"
 
 
 def get_dataset(fuente): # "kaggle" o "tweets" o "balotaje2015"
@@ -50,15 +51,12 @@ def graficar(history):
 
 
 def encodeLabel(training_df, validation_df, testing_df):
-    
-    """
+        
     # Converting label sentiment to numeric value
-    training_df['encoded_sentiment'] = LabelEncoder(
-    ).fit_transform(training_df["sentiment"])
-    validation_df['encoded_sentiment'] = LabelEncoder(
-    ).fit_transform(validation_df["sentiment"])
-    testing_df['encoded_sentiment'] = LabelEncoder(
-    ).fit_transform(testing_df["sentiment"])
+    training_df['encoded_sentiment'] = LabelEncoder().fit_transform(training_df["sentiment"])
+    validation_df['encoded_sentiment'] = LabelEncoder().fit_transform(validation_df["sentiment"])
+    testing_df['encoded_sentiment'] = LabelEncoder().fit_transform(testing_df["sentiment"])
+    
     """
     def codificarSentimiento(sent):
         if(sent == "pos"): 
@@ -71,7 +69,8 @@ def encodeLabel(training_df, validation_df, testing_df):
     training_df['encoded_sentiment'] = training_df["sentiment"].apply(codificarSentimiento)
     validation_df['encoded_sentiment'] = validation_df["sentiment"].apply(codificarSentimiento)
     testing_df['encoded_sentiment'] = testing_df["sentiment"].apply(codificarSentimiento)
-
+    """
+    
     # Separar tweets preprocesados y labels codificados en Series de entrenaminento, validacion y testeo
     x_train = training_df["tweet_preproc"]
     y_train = training_df["encoded_sentiment"]
@@ -212,7 +211,7 @@ def model_tfidf(training_df, validation_df, testing_df):
     print("Milei test:")
     os.chdir("../../")
     train_tw, validation_tw, test_tw = get_dataset("tweets")
-    x_train, y_train, x_val, y_val, x_test, y_test = encodeLabel(train_tw, validation_tw, test_tw)
+    x_train, y_train, x_val, y_val, x_test, y_test = encodeLabel(train_tw, validation_tw, test_tw) # Cambiar al encoder "manual"
     x_test = vectorizer.transform(x_test)
     x_test = scipy.sparse.csr_matrix.todense(x_test)
     loss, accuracy = model.evaluate(x_test, y_test)
@@ -291,6 +290,73 @@ def model_convolutional(training_df, validation_df, testing_df):
     model.save(CONVOLUTIONAL_BALOTAJE)
 
 
+def model_lstm(training_df, validation_df, testing_df):
+
+    # Converting label sentiment to numeric value
+    x_train, y_train, x_val, y_val, x_test, y_test = encodeLabel(training_df, validation_df, testing_df)
+
+    # ---- Convert text into sequence integers ----
+    print("Tweet antes de ser convertido a secuencia de enteros:")
+    print(x_train[0])
+
+    vocab_size = 10000
+    tokenizer = Tokenizer(num_words=vocab_size, oov_token='<OOV>')
+    # Updates internal vocabulary based on a list of sequences.
+    tokenizer.fit_on_texts(x_train)
+    # Transforms each text in texts to a sequence of integers.
+    x_train_seq = tokenizer.texts_to_sequences(x_train)
+    x_val_seq = tokenizer.texts_to_sequences(x_val)
+    x_test_seq = tokenizer.texts_to_sequences(x_test)
+
+    # Maxima cantidad de palabras en un tweet
+    max_len = max([len(tweet_int) for tweet_int in x_train_seq])
+
+    # This function transforms a list (of length num_samples) of sequences (lists of integers)
+    # into a 2D Numpy array of shape (num_samples, num_timesteps). num_timesteps is
+    # the maxlen argument.
+    x_train = pad_sequences(x_train_seq, padding='post', maxlen=max_len)
+    x_val = pad_sequences(x_val_seq, padding='post', maxlen=max_len)
+    x_test = pad_sequences(x_test_seq, padding='post', maxlen=max_len)
+    # Default padding value is 0.
+
+    print("Tweet convertido a secuencia de enteros:")
+    print(x_train[0])
+    print("Shape de x_train:")
+    print(x_train.shape)
+    # ----
+
+    # Construct the model
+    model = tf.keras.Sequential([
+        tf.keras.layers.Embedding(
+            # The model will take as input an integer matrix of size (num_samples, input_length) = (1569, 39)
+            # and the largest integer (i.e. word index) in the input should be no larger than vocabulary size (9999).
+            input_dim=vocab_size,  # Size of the vocabulary,
+            output_dim=100,  # Dimension of the dense embedding.
+            input_length=x_train.shape[1]),  # Length of input sequences (maxlen)
+        tf.keras.layers.LSTM(128), # 128 states, like paper
+        tf.keras.layers.Dense(3, activation='softmax')
+    ])
+
+    # The model used “sparse_categorical_crossentropy” as the loss function because we need to classify
+    # multiple output labels. I also choose the popular “Adam” as the optimizer.
+    model.compile(loss='sparse_categorical_crossentropy',
+                  optimizer='adam', metrics=['accuracy'])
+    model.summary()
+
+    history = model.fit(x_train, y_train, epochs=2,
+                        validation_data=(x_val, y_val), verbose=2)
+
+    loss, accuracy = model.evaluate(x_test, y_test)
+
+    print("Test loss: ", loss)
+    print("Test accuracy: ", accuracy)
+
+    graficar(history)
+    
+    os.chdir("../../../src/trainedModels/")
+    model.save(LSTM_BALOTAJE)
+
+
 if __name__ == "__main__":
 
     # train_df, validation_df, test_df = get_dataset("kaggle")
@@ -310,3 +376,4 @@ if __name__ == "__main__":
     # model_embedding(train_df, validation_df, test_df)
     model_tfidf(train_df, validation_df, test_df)
     # model_convolutional(train_df, validation_df, test_df)
+    # model_lstm(train_df, validation_df, test_df)

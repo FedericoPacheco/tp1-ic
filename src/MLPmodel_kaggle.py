@@ -252,6 +252,69 @@ def model_convolutional(training_df, validation_df, testing_df):
     graficar(history)
     
 
+def model_lstm(training_df, validation_df, testing_df):
+
+    # Converting label sentiment to numeric value
+    x_train, y_train, x_val, y_val, x_test, y_test = encodeLabel(training_df, validation_df, testing_df)
+
+    # ---- Convert text into sequence integers ----
+    print("Tweet antes de ser convertido a secuencia de enteros:")
+    print(x_train[0])
+
+    vocab_size = 10000
+    tokenizer = Tokenizer(num_words=vocab_size, oov_token='<OOV>')
+    # Updates internal vocabulary based on a list of sequences.
+    tokenizer.fit_on_texts(x_train)
+    # Transforms each text in texts to a sequence of integers.
+    x_train_seq = tokenizer.texts_to_sequences(x_train)
+    x_val_seq = tokenizer.texts_to_sequences(x_val)
+    x_test_seq = tokenizer.texts_to_sequences(x_test)
+
+    # Maxima cantidad de palabras en un tweet
+    max_len = max([len(tweet_int) for tweet_int in x_train_seq])
+
+    # This function transforms a list (of length num_samples) of sequences (lists of integers)
+    # into a 2D Numpy array of shape (num_samples, num_timesteps). num_timesteps is
+    # the maxlen argument.
+    x_train = pad_sequences(x_train_seq, padding='post', maxlen=max_len)
+    x_val = pad_sequences(x_val_seq, padding='post', maxlen=max_len)
+    x_test = pad_sequences(x_test_seq, padding='post', maxlen=max_len)
+    # Default padding value is 0.
+
+    print("Tweet convertido a secuencia de enteros:")
+    print(x_train[0])
+    print("Shape de x_train:")
+    print(x_train.shape)
+    # ----
+
+    # Construct the model
+    model = tf.keras.Sequential([
+        tf.keras.layers.Embedding(
+            # The model will take as input an integer matrix of size (num_samples, input_length) = (1569, 39)
+            # and the largest integer (i.e. word index) in the input should be no larger than vocabulary size (9999).
+            input_dim=vocab_size,  # Size of the vocabulary,
+            output_dim=300,  # Dimension of the dense embedding.
+            input_length=x_train.shape[1]),  # Length of input sequences (maxlen)
+        tf.keras.layers.LSTM(128), # 128 states, like paper
+        tf.keras.layers.Dense(4, activation='softmax')
+    ])
+
+    # The model used “sparse_categorical_crossentropy” as the loss function because we need to classify
+    # multiple output labels. I also choose the popular “Adam” as the optimizer.
+    model.compile(loss='sparse_categorical_crossentropy',
+                  optimizer='adam', metrics=['accuracy'])
+    model.summary()
+
+    history = model.fit(x_train, y_train, epochs=15,
+                        validation_data=(x_val, y_val), verbose=2)
+
+    loss, accuracy = model.evaluate(x_test, y_test)
+
+    print("Test loss: ", loss)
+    print("Test accuracy: ", accuracy)
+
+    graficar(history)
+
 
 if __name__ == "__main__":
 
@@ -271,4 +334,5 @@ if __name__ == "__main__":
     model_embedding(train_df, validation_df, test_df)
     # model_tfidf(train_df, validation_df, test_df)
     # model_convolutional(train_df, validation_df, test_df)
+    # model_lstm(train_df, validation_df, test_df)
     
