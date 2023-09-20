@@ -176,7 +176,7 @@ def model_tfidf(training_df, validation_df, testing_df):
     model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.summary()
     
-    history = model.fit(x_train, y_train, epochs=10, validation_data=(x_test, y_test), verbose=2)
+    history = model.fit(x_train, y_train, epochs=10, validation_data=(x_val, y_val), verbose=2)
 
     loss, accuracy = model.evaluate(x_test, y_test)
 
