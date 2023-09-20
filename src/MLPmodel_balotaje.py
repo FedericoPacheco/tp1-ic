@@ -13,6 +13,10 @@ TRAINING_PREPROC = "training_preproc.csv"
 VALIDATION_PREPROC = "validation_preproc.csv"
 TESTING_PREPROC = "testing_preproc.csv"
 
+TFIDF_BALOTAJE = "modelo-TFIDF-balotaje.keras"
+EMBEDDING_BALOTAJE = "modelo-EMBEDDING-balotaje.keras"
+CONVOLUTIONAL_BALOTAJE = "modelo-CONVOLUTIONAL-balotaje.keras"
+
 
 def get_dataset(fuente): # "kaggle" o "tweets" o "balotaje2015"
     # Cambiar al directorio del dataset
@@ -23,10 +27,6 @@ def get_dataset(fuente): # "kaggle" o "tweets" o "balotaje2015"
     train_df = pd.read_csv(TRAINING_PREPROC)
     validation_df = pd.read_csv(VALIDATION_PREPROC)
     test_df = pd.read_csv(TESTING_PREPROC)
-    completo = pd.read_csv("dataset_completo.csv")
-    print("\nDatos completos:\n", completo.groupby('sentiment').count())
-    new_file_name = "negativos"
-    #completo[["tweet_preproc", "sentiment"]].to_csv(new_file_name, index = False)
     
     return train_df, validation_df, test_df
 
@@ -50,7 +50,8 @@ def graficar(history):
 
 
 def encodeLabel(training_df, validation_df, testing_df):
-
+    
+    """
     # Converting label sentiment to numeric value
     training_df['encoded_sentiment'] = LabelEncoder(
     ).fit_transform(training_df["sentiment"])
@@ -58,6 +59,18 @@ def encodeLabel(training_df, validation_df, testing_df):
     ).fit_transform(validation_df["sentiment"])
     testing_df['encoded_sentiment'] = LabelEncoder(
     ).fit_transform(testing_df["sentiment"])
+    """
+    def codificarSentimiento(sent):
+        if(sent == "pos"): 
+            return 0
+        if(sent == "neu"): 
+            return 1
+        if(sent == "neg"): 
+            return 2
+    
+    training_df['encoded_sentiment'] = training_df["sentiment"].apply(codificarSentimiento)
+    validation_df['encoded_sentiment'] = validation_df["sentiment"].apply(codificarSentimiento)
+    testing_df['encoded_sentiment'] = testing_df["sentiment"].apply(codificarSentimiento)
 
     # Separar tweets preprocesados y labels codificados en Series de entrenaminento, validacion y testeo
     x_train = training_df["tweet_preproc"]
@@ -140,6 +153,9 @@ def model_embedding(training_df, validation_df, testing_df):
     print("Test accuracy: ", accuracy)
 
     graficar(history)
+    
+    os.chdir("../../../src/trainedModels/")
+    model.save(EMBEDDING_BALOTAJE)
 
 
 # Based on https://medium.com/swlh/text-classification-using-scikit-learn-pytorch-and-tensorflow-a3350808f9f7
@@ -189,13 +205,20 @@ def model_tfidf(training_df, validation_df, testing_df):
 
     graficar(history)
     
+    os.chdir("../../../src/trainedModels/")
+    model.save(TFIDF_BALOTAJE)
+    
     """
-    os.chdir("../../..")
+    print("Milei test:")
+    os.chdir("../../")
     train_tw, validation_tw, test_tw = get_dataset("tweets")
-    test_tw = vectorizer.transform(test_tw["tweet_preproc"])
-    test_tw = scipy.sparse.csr_matrix.todense(test_tw)
-    predic = model.predict(test_tw)
-    print(predic)
+    x_train, y_train, x_val, y_val, x_test, y_test = encodeLabel(train_tw, validation_tw, test_tw)
+    x_test = vectorizer.transform(x_test)
+    x_test = scipy.sparse.csr_matrix.todense(x_test)
+    loss, accuracy = model.evaluate(x_test, y_test)
+    # print(predic)
+    print("Test loss: ", loss)
+    print("Test accuracy: ", accuracy)
     """
 
 
@@ -263,6 +286,9 @@ def model_convolutional(training_df, validation_df, testing_df):
     print("Test accuracy: ", accuracy)
 
     graficar(history)
+    
+    os.chdir("../../../src/trainedModels/")
+    model.save(CONVOLUTIONAL_BALOTAJE)
 
 
 if __name__ == "__main__":
@@ -281,6 +307,6 @@ if __name__ == "__main__":
     print("\nDatos de validacion:\n", validation_df.groupby("sentiment").count())
     print("\nDatos de test:\n", test_df.groupby("sentiment").count())
 
-    model_embedding(train_df, validation_df, test_df)
-    # model_tfidf(train_df, validation_df, test_df)
+    # model_embedding(train_df, validation_df, test_df)
+    model_tfidf(train_df, validation_df, test_df)
     # model_convolutional(train_df, validation_df, test_df)
