@@ -8,6 +8,18 @@ Integrantes:
 
 ---
 
+### Instalar dependencias del proyecto
+
+Para instalar las dependencias del proyecto, es necesario ejecutar:
+
+```bash
+pip install -r requirements.txt
+```
+
+> Las dependencias se generaron con `pip freeze > requirements.txt`.
+
+---
+
 ### Resumen
 El presente trabajo práctico pretende emular el paper [*Aprobación del presidente de Perú basado en análisis de sentimientos de twitter*](https://journals.eagora.org/revTECHNO/article/view/4396) de *Luis Fernando Solis Navarro* de la *Universidad Nacional de San Cristóbal de Huamanga*, publicado el 28/12/2022 en la *Revista Internacional de Tecnología, Ciencia y Sociedad*. Este evalúa distintas configuraciones de redes neuronales para realizar análisis de sentimientos y lograr estimar la aprobación popular del presidente del Perú utilizando datos de Twitter.
 
