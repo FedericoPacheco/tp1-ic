@@ -7,6 +7,8 @@ from keras.preprocessing.sequence import pad_sequences
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
 import scipy
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import numpy as np
 
 
 TRAINING_PREPROC = "training_preproc.csv"
@@ -153,7 +155,7 @@ def model_tfidf(training_df, validation_df, testing_df):
     x_val = vectorizer.transform(x_val)
     x_test = vectorizer.transform(x_test)
 
-    print(x_val)
+    print(testing_df)
 
     # Because TfidfVectorizer returns sparse matrix, which only stores the non-zero elements. This is done to save 
     # memory, as most of the elements in a text corpus are zeros. We need to convert it to normal dense matrix 
@@ -178,12 +180,24 @@ def model_tfidf(training_df, validation_df, testing_df):
     
     history = model.fit(x_train, y_train, epochs=10, validation_data=(x_val, y_val), verbose=2)
 
+    predictions = model.predict(x_test)
+
+    print(y_test.values)
+    print(np.argmax(predictions, axis=1))
+
+    
+    ConfusionMatrixDisplay.from_predictions(y_test.values, np.argmax(predictions, axis=1))
+
+    plt.show()
+
+    
     loss, accuracy = model.evaluate(x_test, y_test)
 
     print("Test loss: ", loss)
     print("Test accuracy: ", accuracy)
 
     graficar(history)
+    
 
 
 def model_convolutional(training_df, validation_df, testing_df):
@@ -331,8 +345,8 @@ if __name__ == "__main__":
     # print(validation_df.groupby("sentiment").count())
     # print(test_df.groupby("sentiment").count())
 
-    model_embedding(train_df, validation_df, test_df)
-    # model_tfidf(train_df, validation_df, test_df)
+    # model_embedding(train_df, validation_df, test_df)
+    model_tfidf(train_df, validation_df, test_df)
     # model_convolutional(train_df, validation_df, test_df)
     # model_lstm(train_df, validation_df, test_df)
     
