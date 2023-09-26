@@ -39,7 +39,7 @@ Para el caso del dataset de tweets del balotaje presidencial argentino del año 
 
 **Modelo** | **Accuracy** | **Loss**
 :---: | :---: | :---: 
-**MPL con capa de embedding** | ***0.895*** | ***0.295***
+**MLP con capa de embedding** | ***0.895*** | ***0.295***
 **MLP con bag of words** | *0.894* | *0.301*
 **Red neuronal convolucional** | *0.893* | *0.296*
 **Red neuronal LSTM** | *0.355* | *1.097*
